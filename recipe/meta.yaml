@@ -14,7 +14,8 @@ source:
 build:
   # skip py312: langdetect not available
   # skip s390x: deepdiff, httpx, unstructured-client not available
-  skip: true  # [py<39 or py>311 or s390x]
+  # skip win: python-magic not available
+  skip: true  # [py<39 or py>311 or s390x or win]
   script: {{ PYTHON }} -m pip install . --no-deps --no-build-isolation -vv
   number: 0
 
