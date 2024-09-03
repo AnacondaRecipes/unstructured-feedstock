@@ -9,7 +9,7 @@ source:
   - url: https://pypi.io/packages/source/{{ name[0] }}/{{ name }}/unstructured-{{ version }}.tar.gz
     sha256: f0f2c83a86d754df79b17f40c01a446c6f38ded4c253d1da1c2c0ec22f6ffc37
     patches:
-      - setup.patch
+      - patches/setup.patch
   # tests and tests data files
   - url: https://github.com/Unstructured-IO/unstructured/archive/refs/tags/{{ version }}.tar.gz
     sha256: ed149362cf00e73db4896b2fdb7836b3ebbf2772ff47d81adada27e97973f1b1
