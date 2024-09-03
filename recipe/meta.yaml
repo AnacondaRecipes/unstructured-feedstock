@@ -6,10 +6,14 @@ package:
   version: {{ version }}
 
 source:
-  url: https://pypi.io/packages/source/{{ name[0] }}/{{ name }}/unstructured-{{ version }}.tar.gz
-  sha256: f0f2c83a86d754df79b17f40c01a446c6f38ded4c253d1da1c2c0ec22f6ffc37
-  patches:
-    - setup.patch
+  - url: https://pypi.io/packages/source/{{ name[0] }}/{{ name }}/unstructured-{{ version }}.tar.gz
+    sha256: f0f2c83a86d754df79b17f40c01a446c6f38ded4c253d1da1c2c0ec22f6ffc37
+    patches:
+      - setup.patch
+  # tests and tests data files
+  - url: https://github.com/Unstructured-IO/unstructured/archive/refs/tags/{{ version }}.tar.gz
+    sha256: ed149362cf00e73db4896b2fdb7836b3ebbf2772ff47d81adada27e97973f1b1
+    folder: gh_src
 
 build:
   # skip py312: langdetect not available
@@ -73,13 +77,35 @@ requirements:
     - pypdf >=4.0
     - requests-toolbelt >=1.0.0
 
+{% set tests_to_skip = "" %}
+# skip tests that fail on comparing snapshots for utf-16 files formatted differently
+{% set tests_to_skip = tests_to_skip + " fake-text-utf-16-le" %}
+{% set tests_to_skip = tests_to_skip + " or fake-email-utf-16-le" %}
+{% set tests_to_skip = tests_to_skip + " or fake-email-utf-16-be" %}
+
+# See Makefile:: test-no-extras in the Makefile at
+# https://github.com/Unstructured-IO/unstructured/blob/main/Makefile#L313-L320
+{% set files_to_test = "" %}
+{% set files_to_test = files_to_test + "test_unstructured/partition/test_text.py" %}
+{% set files_to_test = files_to_test + " test_unstructured/partition/test_email.py" %}
+{% set files_to_test = files_to_test + " test_unstructured/partition/test_xml_partition.py" %}
+{% set files_to_test = files_to_test + " test_unstructured/partition/html/test_partition.py" %}
+
 test:
   imports:
     - unstructured
-  commands:
-    - pip check
+  source_files:
+    - gh_src/example-docs
+    - gh_src/test_unstructured
   requires:
     - pip
+    - pytest
+    # available and only-used deps in requirements/test.in
+    - pytest-mock
+  commands:
+    - pip check
+    - cd gh_src
+    - pytest -vv {{ files_to_test }} -k "not ({{ tests_to_skip }})"
 
 about:
   home: https://unstructured.io
