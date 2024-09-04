@@ -22,6 +22,8 @@ build:
   skip: true  # [py<39 or py>311 or s390x or win]
   script: {{ PYTHON }} -m pip install . --no-deps --no-build-isolation -vv
   number: 0
+  entry_points:
+    - unstructured-ingest=unstructured.ingest.main:main
 
 requirements:
   build:
@@ -33,49 +35,29 @@ requirements:
     - setuptools
     - wheel
   run:
-    - psutil
     - python
-    - backoff
-    - beautifulsoup4
-    - certifi >=2023.7.22
     - chardet
-    - charset-normalizer >=3.2.0
-    - click >=8.1.7
-    - dataclasses-json >=0.6.4
-    - emoji
     - filetype
-    - idna >=3.4
-    - joblib >=1.4.2
-    - jsonpath-python >=1.0.6
-    - langdetect
+    - python-magic
     - lxml
-    - marshmallow >=3.19.0
-    - mypy_extensions >=1.0.0
     - nltk
-    # NOTE(upstream) - numpy pin is because ONNX model weights are only compatible
+    - tabulate
+    - requests
+    - beautifulsoup4
+    - emoji
+    - dataclasses-json
+    - python-iso639
+    - langdetect
+    # NOTE(robinson) - numpy pin is because ONNX model weights are only compatible
     # with numpy 1.x.x
     - numpy <2
-    - packaging >=23.1
-    - python-dateutil >=2.8.2
-    - python-iso639
-    - python-magic
     - rapidfuzz
-    - regex >=2023.12.25
-    - requests >=2.31.0
-    - six >=1.16.0
-    - soupsieve >=2.5
-    - tabulate
-    - tqdm
-    - typing-extensions >=4.7.1
-    - typing_inspect >=0.9.0
+    - backoff
+    - typing-extensions
     - unstructured-client >=0.15.1
-    - urllib3 >=1.26.18
-    - wrapt
-    - deepdiff >=6.0
-    - httpx >=0.27.0
-    - nest-asyncio >=1.6.0
-    - pypdf >=4.0
-    - requests-toolbelt >=1.0.0
+    - wrapt >=1.14.0
+    - tqdm
+    - psutil
 
 {% set tests_to_skip = "" %}
 # skip tests that fail on comparing snapshots for utf-16 files formatted differently
@@ -102,8 +84,11 @@ test:
     - pytest
     # available and only-used deps in requirements/test.in
     - pytest-mock
+    # unstructured-ingest cli
+    - pandas
   commands:
     - pip check
+    - unstructured-ingest --help
     - cd gh_src
     - pytest -vv {{ files_to_test }} -k "not ({{ tests_to_skip }})"
 
