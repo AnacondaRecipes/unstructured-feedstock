@@ -173,8 +173,8 @@ outputs:
         - pi-heif
         - pypdf
         - google-cloud-vision >=2.0.0
-        # - effdet
         - unstructured-inference 0.8.1.*
+        # Lowering the bound from 0.3.12 to 0.3.10 as there are no breaking changes, and tests using pytesseract seem to work
         - pytesseract >=0.3.10
     test:
       imports:
