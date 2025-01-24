@@ -103,7 +103,7 @@ outputs:
         - wheel
       run:
         - python
-        - {{ pin_subpackage("unstructured", max_pin="x.x.x", exact=True) }}
+        - {{ pin_subpackage("unstructured", exact=True) }}
         - python-pptx >=1.0.1
     test:
       imports:
@@ -131,7 +131,7 @@ outputs:
         - wheel
       run:
         - python
-        - {{ pin_subpackage("unstructured", max_pin="x.x.x", exact=True) }}
+        - {{ pin_subpackage("unstructured", exact=True) }}
         - python-pptx >=1.0.1
     test:
       imports:
@@ -164,7 +164,7 @@ outputs:
         - wheel
       run:
         - python
-        - {{ pin_subpackage("unstructured", max_pin="x.x.x", exact=True) }}
+        - {{ pin_subpackage("unstructured", exact=True) }}
         - onnx
         - pdf2image
         - pdfminer.six
