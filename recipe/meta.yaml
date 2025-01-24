@@ -104,7 +104,7 @@ outputs:
       run:
         - python
         - {{ pin_subpackage("unstructured", max_pin="x.x.x", exact=True) }}
-        - python-pptx
+        - python-pptx >=1.0.1
     test:
       imports:
         - unstructured.partition.ppt
@@ -132,7 +132,7 @@ outputs:
       run:
         - python
         - {{ pin_subpackage("unstructured", max_pin="x.x.x", exact=True) }}
-        - python-pptx
+        - python-pptx >=1.0.1
     test:
       imports:
         - unstructured.partition.pptx
@@ -147,8 +147,7 @@ outputs:
       commands:
         - pip check
         - cd gh_src
-        # test_it_loads_a_PPTX_with_a_JPEG_misidentified_as_image_jpg requires python-pptx >=1.0.1
-        - pytest -vv test_unstructured/partition/test_pptx.py -k "not test_it_loads_a_PPTX_with_a_JPEG_misidentified_as_image_jpg"
+        - pytest -vv test_unstructured/partition/test_pptx.py
 
   - name: unstructured-pdf
     build:
