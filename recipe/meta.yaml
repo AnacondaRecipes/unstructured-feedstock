@@ -1,115 +1,197 @@
 {% set name = "unstructured" %}
-{% set version = "0.15.8" %}
+{% set version = "0.16.6" %}
 
 package:
-  name: {{ name|lower }}
+  name: {{ name|lower }}-suite
   version: {{ version }}
 
 source:
   - url: https://pypi.io/packages/source/{{ name[0] }}/{{ name }}/unstructured-{{ version }}.tar.gz
-    sha256: f0f2c83a86d754df79b17f40c01a446c6f38ded4c253d1da1c2c0ec22f6ffc37
+    sha256: b505ae797a32947b11b4eea0d548dfacd7168a8a9f72280cd2df523705a42254
     patches:
-      - patches/setup.patch
+      - 0001-use-pytesseract-source.patch
   # tests and tests data files
   - url: https://github.com/Unstructured-IO/unstructured/archive/refs/tags/{{ version }}.tar.gz
-    sha256: ed149362cf00e73db4896b2fdb7836b3ebbf2772ff47d81adada27e97973f1b1
+    sha256: e55fcee8666fcdc12c5ff60dc3232555191b31d90e575fbf479c07ce3d5a2d72
     folder: gh_src
+    patches:
+      - 0001-use-pytesseract-gh.patch
 
 build:
-  # skip py312: langdetect not available
-  # skip s390x: deepdiff, httpx, unstructured-client not available
-  # skip win: python-magic not available
-  skip: true  # [py<39 or py>311 or s390x or win]
-  script: {{ PYTHON }} -m pip install . --no-deps --no-build-isolation -vv
   number: 0
-  entry_points:
-    - unstructured-ingest=unstructured.ingest.main:main
 
 requirements:
-  build:
-    - patch     # [not win]
-    - m2-patch  # [win]
   host:
     - python
-    - pip
-    - setuptools
-    - wheel
   run:
     - python
-    - chardet
-    - filetype
-    - python-magic
-    - lxml
-    - nltk
-    - tabulate
-    - requests
-    - beautifulsoup4
-    - emoji
-    - dataclasses-json
-    - python-iso639
-    - langdetect
-    # NOTE(robinson) - numpy pin is because ONNX model weights are only compatible
-    # with numpy 1.x.x
-    - numpy <2
-    - rapidfuzz
-    - backoff
-    - typing-extensions
-    - unstructured-client >=0.15.1
-    - wrapt >=1.14.0
-    - tqdm
-    - psutil
-  run_constrained:
-    - certifi >=2023.7.22
-    - charset-normalizer >=3.2.0
-    - click >=8.1.7
-    - idna >=3.4
-    - joblib >=1.4.2
-    - jsonpath-python >=1.0.6
-    - marshmallow >=3.19.0
-    - mypy_extensions >=1.0.0
-    - packaging >=23.1
-    - python-dateutil >=2.8.2
-    - regex >=2023.12.25
-    - six >=1.16.0
-    - soupsieve >=2.5
-    - typing_inspect >=0.9.0
-    - urllib3 >=1.26.18
-    - nest-asyncio >=1.6.0
-    - pypdf >=4.0
-    - requests-toolbelt >=1.0.0
 
-{% set tests_to_skip = "" %}
-# skip tests that fail on comparing snapshots for utf-16 files formatted differently
-{% set tests_to_skip = tests_to_skip + " fake-text-utf-16-le" %}
-{% set tests_to_skip = tests_to_skip + " or fake-email-utf-16-le" %}
-{% set tests_to_skip = tests_to_skip + " or fake-email-utf-16-be" %}
+outputs:
+  - name: unstructured
+    build:
+      # skip py312: langdetect not available
+      # skip s390x: deepdiff, httpx, unstructured-client not available
+      # skip win: python-magic not available
+      skip: true  # [py<39 or py>311 or s390x or win]
+      script:
+        - {{ PYTHON }} -m pip install . -vv --no-deps --no-build-isolation
+    requirements:
+      build:
+        - patch
+      host:
+        - python
+        - pip
+        - setuptools
+        - wheel
+      run:
+        - python
+        - chardet
+        - filetype
+        - python-magic
+        - lxml
+        - nltk
+        - requests
+        - beautifulsoup4
+        - emoji
+        - dataclasses-json
+        - python-iso639
+        - langdetect
+        # NOTE(robinson) - numpy pin is because ONNX model weights are only compatible
+        # with numpy 1.x.x
+        - numpy <2
+        - rapidfuzz
+        - backoff
+        - typing-extensions
+        - unstructured-client >=0.23.0,<0.26.0
+        - wrapt >=1.14.0
+        - tqdm
+        - psutil
+        - html5lib
+        - python-oxmsg
+    test:
+      imports:
+        - unstructured
+      source_files:
+        - gh_src/example-docs
+        - gh_src/test_unstructured
+      requires:
+        - python
+        - pip
+        - pytest
+        - pytest-mock
+        - pydantic
+      commands:
+        - pip check
+        - cd gh_src
+        - pytest -vv test_unstructured/partition/test_text.py -k "not fake-text-utf-16-le"
+        - pytest -vv test_unstructured/partition/test_email.py
+        - pytest -vv test_unstructured/partition/html/test_partition.py
+        - pytest -vv test_unstructured/partition/test_xml.py
 
-# See Makefile:: test-no-extras in the Makefile at
-# https://github.com/Unstructured-IO/unstructured/blob/main/Makefile#L313-L320
-{% set files_to_test = "" %}
-{% set files_to_test = files_to_test + "test_unstructured/partition/test_text.py" %}
-{% set files_to_test = files_to_test + " test_unstructured/partition/test_email.py" %}
-{% set files_to_test = files_to_test + " test_unstructured/partition/test_xml_partition.py" %}
-{% set files_to_test = files_to_test + " test_unstructured/partition/html/test_partition.py" %}
+  - name: unstructured-ppt
+    build:
+      skip: true  # [py<39 or py>311 or s390x or win]
+      script:
+        - {{ PYTHON }} -m pip install -e ".[ppt]" -vv --no-deps --no-build-isolation
+    requirements:
+      build:
+        - patch
+      host:
+        - python
+        - pip
+        - setuptools
+        - wheel
+      run:
+        - python
+        - {{ pin_subpackage("unstructured", exact=True) }}
+        - python-pptx >=1.0.1
+    test:
+      imports:
+        - unstructured.partition.ppt
+      requires:
+        - python
+        - pip
+      commands:
+        - pip check
+        # Not running pytest for this package, as it requires libreoffice to be installed
+        # https://docs.unstructured.io/open-source/core-functionality/partitioning#partition-ppt
 
-test:
-  imports:
-    - unstructured
-  source_files:
-    - gh_src/example-docs
-    - gh_src/test_unstructured
-  requires:
-    - pip
-    - pytest
-    # available and only-used deps in requirements/test.in
-    - pytest-mock
-    # unstructured-ingest cli
-    - pandas
-  commands:
-    - pip check
-    - unstructured-ingest --help
-    - cd gh_src
-    - pytest -vv {{ files_to_test }} -k "not ({{ tests_to_skip }})"
+  - name: unstructured-pptx
+    build:
+      skip: true  # [py<39 or py>311 or s390x or win]
+      script:
+        - {{ PYTHON }} -m pip install -e ".[pptx]" -vv --no-deps --no-build-isolation
+    requirements:
+      build:
+        - patch
+      host:
+        - python
+        - pip
+        - setuptools
+        - wheel
+      run:
+        - python
+        - {{ pin_subpackage("unstructured", exact=True) }}
+        - python-pptx >=1.0.1
+    test:
+      imports:
+        - unstructured.partition.pptx
+      source_files:
+        - gh_src/example-docs
+        - gh_src/test_unstructured
+      requires:
+        - python
+        - pip
+        - pytest
+        - pytest-mock
+      commands:
+        - pip check
+        - cd gh_src
+        - pytest -vv test_unstructured/partition/test_pptx.py
+
+  - name: unstructured-pdf
+    build:
+      skip: true  # [py<39 or py>311 or s390x or win]
+      script:
+        - {{ PYTHON }} -m pip install -e ".[pdf]" -vv --no-deps --no-build-isolation
+    requirements:
+      build:
+        - patch
+      host:
+        - python
+        - pip
+        - setuptools
+        - wheel
+      run:
+        - python
+        - {{ pin_subpackage("unstructured", exact=True) }}
+        - onnx
+        - pdf2image
+        - pdfminer.six
+        - pikepdf
+        - pi-heif
+        - pypdf
+        - google-cloud-vision >=2.0.0
+        - unstructured-inference 0.8.1.*
+        # Lowering the bound from 0.3.12 to 0.3.10 as there are no breaking changes, and tests using pytesseract seem to work
+        - pytesseract >=0.3.10
+    test:
+      imports:
+        - unstructured.partition.pdf
+      source_files:
+        - gh_src/example-docs
+        - gh_src/test_unstructured
+      requires:
+        - python
+        - pip
+        - pytest
+        - pytest-mock
+      commands:
+        - pip check
+        - cd gh_src
+        # test_analysis_artifacts_saved requires fonts to be installed on system, not available on CI
+        # Testing is unstable on linux-aarch64 CI
+        - pytest -vv test_unstructured/partition/pdf_image -k "not (test_analysis_artifacts_saved)"  # [not aarch64]
 
 about:
   home: https://unstructured.io
@@ -127,3 +209,5 @@ about:
 extra:
   recipe-maintainers:
     - jan-janssen
+  skip-lints:
+    - wrong_output_script_key
