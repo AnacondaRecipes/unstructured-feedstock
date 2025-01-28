@@ -32,7 +32,10 @@ outputs:
       # skip py312: langdetect not available
       # skip s390x: deepdiff, httpx, unstructured-client not available
       # skip win: python-magic not available
-      skip: true  # [py<39 or py>311 or s390x or win]
+      # skip linux: skipping linux in this rebuild as build 0 has already been uploaded and is working fine
+      #             while in this rebuild it's getting some http 403 forbidden errors during test phase
+      #             (most likely upstream blocks our CI IP address)
+      skip: true  # [py<39 or py>311 or s390x or win or linux]
       script:
         - {{ PYTHON }} -m pip install . -vv --no-deps --no-build-isolation
     requirements:
@@ -90,7 +93,7 @@ outputs:
 
   - name: unstructured-ppt
     build:
-      skip: true  # [py<39 or py>311 or s390x or win]
+      skip: true  # [py<39 or py>311 or s390x or win or linux]
       script:
         - {{ PYTHON }} -m pip install -e ".[ppt]" -vv --no-deps --no-build-isolation
     requirements:
@@ -118,7 +121,7 @@ outputs:
 
   - name: unstructured-pptx
     build:
-      skip: true  # [py<39 or py>311 or s390x or win]
+      skip: true  # [py<39 or py>311 or s390x or win or linux]
       script:
         - {{ PYTHON }} -m pip install -e ".[pptx]" -vv --no-deps --no-build-isolation
     requirements:
@@ -151,7 +154,7 @@ outputs:
 
   - name: unstructured-pdf
     build:
-      skip: true  # [py<39 or py>311 or s390x or win]
+      skip: true  # [py<39 or py>311 or s390x or win or linux]
       script:
         - {{ PYTHON }} -m pip install -e ".[pdf]" -vv --no-deps --no-build-isolation
     requirements:
