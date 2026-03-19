@@ -1,0 +1,9 @@
+anaconda_config_version: 1
+upstream_sources:
+  - pypi:
+      identifier: unstructured
+    packages:
+      - unstructured
+      - unstructured-pdf
+      - unstructured-ppt
+      - unstructured-pptx
